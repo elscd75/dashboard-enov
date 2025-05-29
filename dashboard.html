@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard GTC Chaufferie</title>
+  <!-- Inclusion de Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Inclusion du plugin DataLabels pour le Donut uniquement -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+  <style>
+    /* Styles globaux */
+    body {
+      font-family: Helvetica, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+    }
+    .h2{
+        font-family: Helvetica, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f9;
+        justify-content: center;
+    }
+    .subtitle{
+        position: relative;
+        top: -5%;
+    }
+    /* Header avec un dégradé et logos */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      background: linear-gradient(90deg, #1a434e, #336f7c);
+      color: white;
+      padding: 10px;
+    }
+    .header h1 {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      text-align: center;
+      font-size: 4rem;
+      line-height: 4rem;
+    }
+    /* Logo du client à gauche et logo principal à droite */
+    .header .client {
+      position: absolute;
+      left: 5%;
+      height: 70%;  /* Ajustez selon vos besoins */
+      object-fit: contain;
+    }
+    .header .logo {
+      position: absolute;
+      right: 5%;
+      height: 40%;  /* Correspond à la hauteur du titre */
+      object-fit: contain;
+    }
+    /* Dashboard et cartes */
+    .dashboard {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 10px;
+      justify-content: center;
+    }
+    .card {
+      background: white;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+      width: 45%;
+      min-width: 300px;
+      position: relative;
+    }
+    .chart-container {
+      position: relative;
+      height: 300px; /* Hauteur fixée pour chaque graphique */
+    }
+    /* Sélecteur de circuit pour la gauge */
+    .circuit-selector {
+        position: relative;
+        width: 30%;
+        padding: 5px;
+        font-size: 1rem;
+        margin: auto;
+        display: block;
+    }
+    /* Gauge – configuration */
+    .gauge-container {
+      position: relative;
+      top: 20%;
+      width: 100%;
+      max-width: 300px;
+      margin: auto;
+    }
+    .gauge-wrapper {
+      position: relative;
+      width: 100%;
+      padding-top: 50%; /* Pour obtenir un aspect ratio de 2:1 */
+    }
+    .gauge-wrapper canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100% !important;
+      height: 100% !important;
+    }
+    .gauge-needle {
+      position: absolute;
+      width: 2px;
+      height: 60%;
+      background: black;
+      left: 50%;
+      bottom: 0;
+      transform-origin: bottom center;
+      transition: transform 0.5s ease;
+    }
+    /* Labels autour de la gauge */
+    .gauge-value,
+    .gauge-objectif,
+    .gauge-start,
+    .gauge-max,
+    .gauge-45,
+    .gauge-75 {position: absolute; font-size: 1rem; font-weight: bold; color: #333; }
+    .gauge-value { bottom: -20%; left: 50%; transform: translateX(-50%); }
+    .gauge-objectif { bottom: 105%; left: 50%; transform: translateX(-50%); }
+    .gauge-start { bottom: 0%; left: -5%; transform: translateX(-50%); }
+    .gauge-max { bottom: 0%; left: 105%; transform: translateX(-50%); }
+    .gauge-45 { bottom: 60%; left: 5%; transform: translateX(-50%); }
+    .gauge-75 { bottom: 60%; left: 95%; transform: translateX(-50%); }
+    @media (max-width: 768px) {
+      .card { width: 100%; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header -->
+  <div class="header">
+    <h1>VILLE DE CASSIS<br>Dashboard Chaufferie</h1>
+    <img src="cassis.png" alt="Client Logo" class="client">
+    <img src="logo-enov.png" alt="Enov Logo" class="logo">
+  </div>
+  
+  <!-- Dashboard -->
+  <div class="dashboard">
+    <!-- Histogramme -->
+    <div class="card">
+      <h2>Consommation de Gaz</h2>
+      <div class="chart-container">
+        <canvas id="histogramme"></canvas>
+      </div>
+    </div>
+
+    <!-- Gauge avec sélecteur -->
+    <div class="card">
+      <h2>IPE 1</h2>
+      <div class="subtitle" id="IPE">kWh/m²/°C</div>
+      <select id="circuit-select" class="circuit-selector">
+         <option value="Circuit 1">Circuit 1</option>
+         <option value="Circuit 2">Circuit 2</option>
+      </select>
+      <div class="gauge-container">
+         <div class="gauge-wrapper">
+            <canvas id="gauge"></canvas>
+         </div>
+         <div class="gauge-needle" id="gauge-needle"></div>
+         <!-- Labels statiques -->
+         <div class="gauge-value" id="gauge-value">150</div>
+         <div class="gauge-objectif" id="gauge-objectif">95</div>
+         <div class="gauge-start" id="gauge-start">0</div>
+         <div class="gauge-45" id="gauge-45">50</div>
+         <div class="gauge-75" id="gauge-75">150</div>
+         <div class="gauge-max" id="gauge-max">190</div>
+      </div>
+    </div>
+
+    <!-- Courbe de Charge -->
+    <div class="card">
+      <h2>Courbe de Charge</h2>
+      <div class="chart-container">
+        <canvas id="courbeCharge"></canvas>
+      </div>
+    </div>
+    <!-- Donut -->
+    <div class="card">
+      <h2>Répartition des Consommations</h2>
+      <div class="chart-container">
+         <canvas id="donut"></canvas>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Exécution lorsque le DOM est chargé
+    document.addEventListener('DOMContentLoaded', function() {
+      /********** Données globales **********/
+      // Données pour l'histogramme
+      const mois = ['Jan', 'Fev', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aout', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const consommationGaz = [578,656,655,738,347,200];
+      const consommationGazAnneePrecedente = [578,722,787,812,382,258,155,155,478,813,968,970];
+      
+      // Pour la gauge
+      let gaugeValue = 150;
+      let maxValue = 190;
+      const circuits = {
+        "Circuit 1": { measured: 150, objectif: 95, max: 190 },
+        "Circuit 2": { measured: 100, objectif: 95, max: 190 }
+      };
+      
+      // Pour la Courbe de Charge
+      const heures = [];
+      for (let i = 0; i < 24; i++) {
+        heures.push(i + "h");
+      }
+      const chargeChaudiere1 = [0,0,25,0,25,75,100,100,100,75,50,25,75,100,100,100,75,25,0,0,0,0,0,0];
+      const chargeChaudiere2 = [0,0,0,0,0,0,50,100,50,0,0,0,0,100,50,0,0,0,0,0,0,0,0,0];
+      // Variables pour suivre la visibilité des séries
+      let showC1 = true;
+      let showC2 = false;
+      
+      // Pour le Donut
+      const repartition = [43, 38, 19];
+      
+      /********** Histogram Chart **********/
+      const ctxHisto = document.getElementById('histogramme').getContext('2d');
+      new Chart(ctxHisto, {
+        type: 'bar',
+        data: {
+          labels: mois,
+          datasets: [
+            {
+              label: 'Année 2024',
+              data: consommationGazAnneePrecedente,
+              backgroundColor: 'rgba(255,165,0,0.5)'
+            },
+            {
+              label: 'Année 2025',
+              data: consommationGaz,
+              backgroundColor: '#316c79'
+            }
+          ]
+        },
+        options: {
+          scales: {
+            y: {
+              min:50,
+              max: 1000,
+              title: { display: true, text: 'kWh' }
+            }
+          },
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+      
+      /********** Gauge Chart **********/
+      const ctxGauge = document.getElementById('gauge').getContext('2d');
+      const gaugeWrapper = document.querySelector('.gauge-wrapper');
+      const gradient = ctxGauge.createLinearGradient(0, 0, gaugeWrapper.clientWidth, 0);
+      gradient.addColorStop(0, 'green');
+      gradient.addColorStop(0.5, 'yellow');
+      gradient.addColorStop(1, 'red');
+      
+      const gaugeChart = new Chart(ctxGauge, {
+        type: 'doughnut',
+        data: {
+          labels: ['Atteint', 'Restant'],
+          datasets: [{
+            data: [gaugeValue, maxValue - gaugeValue],
+            backgroundColor: [gradient, 'lightgray'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          cutout: '80%',
+          rotation: -90,
+          circumference: 180,
+          plugins: {
+            legend: { display: false },
+            tooltip: { enabled: false }
+          },
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+      
+      function positionNeedle() {
+        const needle = document.getElementById('gauge-needle');
+        const angle = (gaugeValue / maxValue) * 180 - 90;
+        needle.style.transform = `translate(-50%, 0) rotate(${angle}deg)`;
+      }
+      positionNeedle();
+      
+      // Attachement de l'événement sur le sélecteur de circuit
+      document.getElementById('circuit-select').addEventListener('change', function(e) {
+        const selected = e.target.value;
+        gaugeValue = circuits[selected].measured;
+        maxValue = circuits[selected].max;
+        document.getElementById('gauge-value').textContent = gaugeValue;
+        document.getElementById('gauge-objectif').textContent = circuits[selected].objectif;
+        gaugeChart.data.datasets[0].data = [gaugeValue, maxValue - gaugeValue];
+        gaugeChart.update();
+        positionNeedle();
+      });
+      
+      /********** Courbe de Charge Chart **********/
+      const ctxCharge = document.getElementById('courbeCharge').getContext('2d');
+      let chargeChart = new Chart(ctxCharge, {
+        type: 'line',
+        data: {
+          labels: heures,
+          datasets: [] // Les datasets seront créés par updateChargeChart()
+        },
+        options: {
+          plugins: {
+            legend: {
+              display: true,
+              onClick: function(e, legendItem, legend) {
+                // Bascule la visibilité de chaque série
+                if (legendItem.text === 'Chaudière 1') {
+                  showC1 = !showC1;
+                } else if (legendItem.text === 'Chaudière 2') {
+                  showC2 = !showC2;
+                }
+                updateChargeChart();
+                chargeChart.update();
+              },
+              labels: {
+                generateLabels: function(chart) {
+                  return [
+                    {
+                      text: 'Chaudière 1',
+                      fillStyle: showC1 ? '#316c79' : 'rgba(49,108,121,0.5)',
+                      hidden: false,
+                      datasetIndex: 0
+                    },
+                    {
+                      text: 'Chaudière 2',
+                      fillStyle: showC2 ? '#79316c' : 'rgba(121,49,108,0.5)',
+                      hidden: false,
+                      datasetIndex: 1
+                    }
+                  ];
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 200,
+              ticks: {
+                stepSize: 25,
+                callback: function(value) { return value + '%'; }
+              },
+              title: { display: true, text: 'Charge (%)' }
+            },
+            x: { 
+              title: { display: true, text: 'Heure' }
+            }
+          },
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+      
+      // Fonction de mise à jour de la Courbe de Charge
+      function updateChargeChart() {
+        let newDatasets = [];
+        if (showC1 && showC2) {
+          // Si les deux sont activées, additionner heure par heure
+          const combined = chargeChaudiere1.map((v, i) => v + chargeChaudiere2[i]);
+          newDatasets.push({
+            label: 'Charge Totale (C1 + C2)',
+            data: combined,
+            borderColor: 'rgb(255,165,0)',
+            backgroundColor: 'rgba(255,165,0,0.5)',
+            fill: true,
+            tension: 0.1
+          });
+        } else if (showC1) {
+          newDatasets.push({
+            label: 'Chaudière 1',
+            data: chargeChaudiere1,
+            borderColor: '#316c79',
+            backgroundColor: 'rgba(49,108,121,0.3)',
+            fill: true,
+            tension: 0.1
+          });
+        } else if (showC2) {
+          newDatasets.push({
+            label: 'Chaudière 2',
+            data: chargeChaudiere2,
+            borderColor: '#79316c',
+            backgroundColor: 'rgba(121,49,108,0.3)',
+            fill: true,
+            tension: 0.1
+          });
+        }
+        chargeChart.data.datasets = newDatasets;
+        chargeChart.update();
+      }
+      updateChargeChart();
+      
+      /********** Donut Chart **********/
+      const ctxDonut = document.getElementById('donut').getContext('2d');
+      new Chart(ctxDonut, {
+        type: 'doughnut',
+        data: {
+          labels: ['Chauffage 1', 'Chauffage 2', 'ECS'],
+          datasets: [{
+            data: repartition,
+            backgroundColor: ['#316c79', '#79316c', '#6c7931']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            datalabels: {
+              color: 'white',
+              font: { weight: 'bold' },
+              formatter: function(value) {
+                return value + '%';
+              }
+            },
+            legend: { display: true }
+          }
+        },
+        plugins: [ChartDataLabels]
+      });
+    });
+  </script>
+</body>
+</html>
