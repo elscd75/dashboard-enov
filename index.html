@@ -13,10 +13,37 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            background: linear-gradient(90deg, #1a434e, #336f7c) ;
+            background: linear-gradient(90deg, #1a434e, #336f7c);
             background-size: cover;
             background-position: center;
         }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(90deg, #1a434e, #336f7c);
+            color: white;
+            padding: 10px;
+            position: absolute;
+            top: 0;
+            width: 100%;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 5rem;
+            line-height: 5rem;
+        }
+
+        .header img {
+            width: 30%; /* Ajustez la taille du logo ici */
+            height: auto;
+            margin-right: 10px;
+        }
+
         .login-container {
             background-color: white;
             padding: 20px;
@@ -24,11 +51,9 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             text-align: center;
             width: 300px;
+            margin-top: 60px; /* Ajoutez une marge pour éviter que le formulaire ne soit caché sous le header */
         }
-        .login-container img {
-            width: 100px;
-            margin-bottom: 20px;
-        }
+
         .login-container input {
             width: 100%;
             padding: 10px;
@@ -37,6 +62,7 @@
             border-radius: 5px;
             box-sizing: border-box;
         }
+
         .login-container button {
             width: 100%;
             padding: 10px;
@@ -46,14 +72,17 @@
             border-radius: 5px;
             cursor: pointer;
         }
+
         .login-container button:hover {
             background-color: #0056b3;
         }
     </style>
 </head>
 <body>
-    <h1>Votre Dashboard</h1>
-    <img src="logo-enov 2.svg" alt="Logo"> <!-- Remplacez par l'URL de votre logo -->
+    <div class="header">
+        <img src="logo-enov.png" alt="Logo">
+        <h1>Votre Dashboard</h1>
+    </div>
     <div class="login-container">
         <h2>Connexion</h2>
         <form action="dashboard.html" method="get">
