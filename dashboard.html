@@ -1,33 +1,24 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard GTC Chaufferie</title>
-  <!-- Inclusion de Chart.js -->
+
+  <!-- Inclusion des bibliothèques Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Inclusion du plugin DataLabels pour le Donut uniquement -->
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+
   <style>
-    /* Styles globaux */
+    /* ========== STYLES GLOBAUX ========== */
     body {
       font-family: Helvetica, sans-serif;
       margin: 0;
       padding: 0;
       background-color: #f4f4f9;
     }
-    .h2{
-        font-family: Helvetica, sans-serif;
-        margin: 0;
-        padding: 0;
-        background-color: #f4f4f9;
-        justify-content: center;
-    }
-    .subtitle{
-        position: relative;
-        top: -5%;
-    }
-    /* Header avec un dégradé et logos */
+
+    /* ========== HEADER ========== */
     .header {
       display: flex;
       align-items: center;
@@ -37,6 +28,7 @@
       color: white;
       padding: 10px;
     }
+
     .header h1 {
       margin: 0;
       font-family: Arial, Helvetica, sans-serif;
@@ -44,20 +36,97 @@
       font-size: 4rem;
       line-height: 4rem;
     }
-    /* Logo du client à gauche et logo principal à droite */
+
     .header .client {
       position: absolute;
       left: 5%;
-      height: 70%;  /* Ajustez selon vos besoins */
+      height: 70%;
       object-fit: contain;
     }
+
     .header .logo {
       position: absolute;
       right: 5%;
-      height: 40%;  /* Correspond à la hauteur du titre */
+      height: 40%;
       object-fit: contain;
     }
-    /* Dashboard et cartes */
+
+    /* ========== STYLES WIDGET ALARMES ========== */
+    .alarm-widget {
+      background: white;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px;
+      width: calc(100% - 40px);
+      box-sizing: border-box;
+    }
+
+    .alarm-title {
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 20px;
+      font-family: Helvetica, sans-serif;
+    }
+
+    .alarm-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .alarm-column {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .alarm-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px;
+      border-radius: 6px;
+      background-color: #f8f9fa;
+      transition: background-color 0.3s ease;
+    }
+
+    .alarm-item:hover {
+      background-color: #e9ecef;
+    }
+
+    .alarm-light {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid #ddd;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+
+    .alarm-light.active {
+      background-color: #dc3545;
+      border-color: #dc3545;
+      box-shadow: 0 0 10px rgba(220,53,69,0.5);
+    }
+
+    .alarm-light.inactive {
+      background-color: rgba(17, 69, 29, 0.3);
+      border-color: rgba(40,167,69);
+      box-shadow: 0 0 10px rgba(40,167,69,0.3);
+    }
+
+    .alarm-text {
+      font-size: 0.95rem;
+      color: #333;
+      font-weight: 500;
+    }
+
+    /* ========== DASHBOARD ET CARTES ========== */
     .dashboard {
       display: flex;
       flex-wrap: wrap;
@@ -65,6 +134,7 @@
       padding: 10px;
       justify-content: center;
     }
+
     .card {
       background: white;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
@@ -75,20 +145,156 @@
       min-width: 300px;
       position: relative;
     }
+
+    .card h2 {
+      font-family: Helvetica, sans-serif;
+      margin: 0 0 10px 0;
+      color: #333;
+    }
+
     .chart-container {
       position: relative;
-      height: 300px; /* Hauteur fixée pour chaque graphique */
+      height: 300px;
     }
-    /* Sélecteur de circuit pour la gauge */
+
+    /* Animation pour retourner la carte */
+    .flip-container {
+      perspective: 1000px;
+      width: 100%;
+      height: 300px;
+    }
+
+    .flipper {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+    }
+
+    .card-front, .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .card-back {
+      transform: rotateY(180deg);
+    }
+
+    .flipped {
+      transform: rotateY(180deg);
+    }
+
+    /* ========== STYLES SPÉCIFIQUES DONUT ========== */
+    .donut-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .switch-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 24px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: #316c79;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+
+    .switch-label {
+      font-size: 0.9rem;
+      color: #333;
+      font-weight: 500;
+    }
+
+    .donut-center-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .donut-total-value {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #333;
+      line-height: 1;
+    }
+
+    .donut-total-label {
+      font-size: 0.9rem;
+      color: #666;
+      margin-top: 2px;
+    }
+    .subtitle {
+      position: relative;
+      top: 0;
+      color: #666;
+      font-size: 0.9rem;
+    }
+
     .circuit-selector {
-        position: relative;
-        width: 30%;
-        padding: 5px;
-        font-size: 1rem;
-        margin: auto;
-        display: block;
+      position: relative;
+      width: 30%;
+      padding: 5px;
+      font-size: 1rem;
+      margin: 10px auto;
+      display: block;
+      border: 1px solid #ddd;
+      border-radius: 4px;
     }
-    /* Gauge – configuration */
+
     .gauge-container {
       position: relative;
       top: 20%;
@@ -96,11 +302,13 @@
       max-width: 300px;
       margin: auto;
     }
+
     .gauge-wrapper {
       position: relative;
       width: 100%;
-      padding-top: 50%; /* Pour obtenir un aspect ratio de 2:1 */
+      padding-top: 50%;
     }
+
     .gauge-wrapper canvas {
       position: absolute;
       top: 0;
@@ -108,6 +316,7 @@
       width: 100% !important;
       height: 100% !important;
     }
+
     .gauge-needle {
       position: absolute;
       width: 2px;
@@ -118,36 +327,125 @@
       transform-origin: bottom center;
       transition: transform 0.5s ease;
     }
-    /* Labels autour de la gauge */
+
+    /* Labels de la gauge */
     .gauge-value,
     .gauge-objectif,
     .gauge-start,
     .gauge-max,
     .gauge-45,
-    .gauge-75 {position: absolute; font-size: 1rem; font-weight: bold; color: #333; }
+    .gauge-75 {
+      position: absolute;
+      font-size: 1rem;
+      font-weight: bold;
+      color: #333;
+    }
+
     .gauge-value { bottom: -20%; left: 50%; transform: translateX(-50%); }
     .gauge-objectif { bottom: 105%; left: 50%; transform: translateX(-50%); }
     .gauge-start { bottom: 0%; left: -5%; transform: translateX(-50%); }
     .gauge-max { bottom: 0%; left: 105%; transform: translateX(-50%); }
     .gauge-45 { bottom: 60%; left: 5%; transform: translateX(-50%); }
     .gauge-75 { bottom: 60%; left: 95%; transform: translateX(-50%); }
+
+    /* ========== RESPONSIVE ========== */
     @media (max-width: 768px) {
-      .card { width: 100%; }
+      .card {
+        width: 100%;
+      }
+      .header h1 {
+        font-size: 2.5rem;
+        line-height: 2.5rem;
+      }
+      .alarm-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 1024px) {
+      .alarm-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    /* Style pour le bouton de basculement */
+    #toggle-chart-button {
+      background-color: #316c79;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-bottom: 10px;
+    }
+
+    #toggle-chart-button:hover {
+      background-color: #1a434e;
     }
   </style>
 </head>
 
 <body>
-  <!-- Header -->
+  <!-- ========== HEADER ========== -->
   <div class="header">
     <h1>VILLE DE CASSIS<br>Dashboard Chaufferie</h1>
     <img src="cassis.png" alt="Client Logo" class="client">
     <img src="logo-enov.png" alt="Enov Logo" class="logo">
   </div>
-  
-  <!-- Dashboard -->
+
+  <!-- ========== WIDGET ALARMES ET DÉFAUTS ========== -->
+  <div class="alarm-widget">
+    <h2 class="alarm-title">Alarmes et Défauts</h2>
+    <div class="alarm-grid">
+      <div class="alarm-column">
+        <div class="alarm-item">
+          <div class="alarm-light" id="alarm-1"></div>
+          <span class="alarm-text">Thermostat chaudiere 1</span>
+        </div>
+        <div class="alarm-item">
+          <div class="alarm-light" id="alarm-2"></div>
+          <span class="alarm-text">Thermostat chaudiere 2</span>
+        </div>
+        <div class="alarm-item">
+          <div class="alarm-light" id="alarm-3"></div>
+          <span class="alarm-text">Defaut pompe primaire</span>
+        </div>
+      </div>
+      <div class="alarm-column">
+        <div class="alarm-item">
+          <div class="alarm-light" id="alarm-4"></div>
+          <span class="alarm-text">Defaut manque d'eau chaudiere 1</span>
+        </div>
+        <div class="alarm-item">
+          <div class="alarm-light" id="alarm-5"></div>
+          <span class="alarm-text">Defaut manque d'eau chaudiere 2</span>
+        </div>
+        <div class="alarm-item">
+          <div class="alarm-light" id="alarm-6"></div>
+          <span class="alarm-text">Defaut pompe secondaire</span>
+        </div>
+      </div>
+      <div class="alarm-column">
+        <div class="alarm-item">
+          <div class="alarm-light" id="alarm-7"></div>
+          <span class="alarm-text">Defaut circulateur circuit 1</span>
+        </div>
+        <div class="alarm-item">
+          <div class="alarm-light" id="alarm-8"></div>
+          <span class="alarm-text">Defaut circulateur circuit 2</span>
+        </div>
+        <div class="alarm-item">
+          <div class="alarm-light" id="alarm-9"></div>
+          <span class="alarm-text">Defaut légionnelose</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== DASHBOARD ========== -->
   <div class="dashboard">
-    <!-- Histogramme -->
+    <!-- Carte Histogramme -->
     <div class="card">
       <h2>Consommation de Gaz</h2>
       <div class="chart-container">
@@ -155,10 +453,10 @@
       </div>
     </div>
 
-    <!-- Gauge avec sélecteur -->
+    <!-- Carte Gauge IPE -->
     <div class="card">
       <h2>IPE 1</h2>
-      <div class="subtitle" id="IPE">kWh/m²/°C</div>
+      <div class="subtitle" id="IPE">Wh/m²/°C</div>
       <select id="circuit-select" class="circuit-selector">
          <option value="Circuit 1">Circuit 1</option>
          <option value="Circuit 2">Circuit 2</option>
@@ -178,261 +476,598 @@
       </div>
     </div>
 
-    <!-- Courbe de Charge -->
+    <!-- Carte Courbe de Charge -->
     <div class="card">
       <h2>Courbe de Charge</h2>
-      <div class="chart-container">
-        <canvas id="courbeCharge"></canvas>
+      <button id="toggle-chart-button">Basculer vers Consommation</button>
+      <div class="flip-container">
+        <div class="flipper" id="chart-flipper">
+          <div class="card-front">
+            <canvas id="courbeCharge"></canvas>
+          </div>
+          <div class="card-back">
+            <canvas id="consommationChart"></canvas>
+          </div>
+        </div>
       </div>
     </div>
-    <!-- Donut -->
+
+    <!-- Carte Donut -->
     <div class="card">
       <h2>Répartition des Consommations</h2>
-      <div class="chart-container">
+
+      <!-- Contrôles du donut -->
+      <div class="donut-controls">
+        <div class="switch-container">
+          <span class="switch-label">%</span>
+          <label class="switch">
+            <input type="checkbox" id="donut-switch">
+            <span class="slider"></span>
+          </label>
+          <span class="switch-label">kWh</span>
+        </div>
+      </div>
+
+      <div class="chart-container" style="position: relative;">
          <canvas id="donut"></canvas>
+         <!-- Texte au centre du donut -->
+         <div class="donut-center-text">
+           <div class="donut-total-value" id="donut-total-value">5000</div>
+           <div class="donut-total-label" id="donut-total-label">kWh Total</div>
+         </div>
       </div>
     </div>
   </div>
-  
+
   <script>
-    // Exécution lorsque le DOM est chargé
-    document.addEventListener('DOMContentLoaded', function() {
-      /********** Données globales **********/
-      // Données pour l'histogramme
-      const mois = ['Jan', 'Fev', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aout', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const consommationGaz = [578,656,655,738,347,200];
-      const consommationGazAnneePrecedente = [578,722,787,812,382,258,155,155,478,813,968,970];
-      
-      // Pour la gauge
-      let gaugeValue = 150;
-      let maxValue = 190;
-      const circuits = {
+    // ========== CONFIGURATION DES ALARMES ==========
+    const AlarmStates = {
+      alarm1: false,
+      alarm2: false,
+      alarm3: false,
+      alarm4: false,
+      alarm5: true,
+      alarm6: false,
+      alarm7: false,
+      alarm8: true,
+      alarm9: false
+    };
+
+    // ========== CONFIGURATION DES DONNÉES ==========
+    const DashboardData = {
+      // Données pour l'histogramme de consommation
+      histogram: {
+        mois: ['Jan', 'Fev', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aout', 'Sep', 'Oct', 'Nov', 'Dec'],
+        consommation2025: [578, 656, 655, 738, 347, 200],
+        consommation2024: [578, 722, 787, 812, 382, 258, 155, 155, 478, 813, 968, 970]
+      },
+
+      // Configuration des circuits pour la gauge
+      circuits: {
         "Circuit 1": { measured: 150, objectif: 95, max: 190 },
         "Circuit 2": { measured: 100, objectif: 95, max: 190 }
-      };
-      
-      // Pour la Courbe de Charge
-      const heures = [];
-      for (let i = 0; i < 24; i++) {
-        heures.push(i + "h");
+      },
+
+      // Données pour la courbe de charge (charge horaire des chaudières)
+      courbeCharge: {
+        heures: Array.from({length: 24}, (_, i) => i + "h"),
+        chaudiere1: [0,0,25,0,25,75,100,100,100,75,50,25,75,100,100,100,75,25,0,0,0,0,0,0],
+        chaudiere2: [0,0,0,0,0,0,50,100,50,0,0,0,0,100,50,0,0,0,0,0,0,0,0,0],
+      },
+
+      // Données pour les courbes de consommation
+      consommation: {
+        heures: Array.from({length: 24}, (_, i) => i + "h"),
+        circuit1: [105,105,105,105,105,105,150,200,200,200,200,200,150,150,200,200,200,150,150,105,105,105,105,105],
+        circuit2: [95,95,95,95,95,95,95,150,150,150,150,150,85,85,150,150,150,95,95,95,95,95,95,95]
+      },
+
+      // Données pour les courbes de température
+      temperature: {
+        heures: Array.from({length: 24}, (_, i) => i + "h"),
+        exterieur: [7.3,6.3,7.8,7.3,6.8,6.7,7.6,8.2,8.6,9.8,10.5,12.4,13.2,12.9,14.2,11,11.1,10.9,10.1,8.4,7.4,6.4,6.7,7.3],
+        circuit1: [7,7,7,7,7,7,16,22,22,22,22,22,16,16,22,22,22,16,16,7,7,7,7,7],
+        circuit2: [7,7,7,7,7,7,16,19,19,19,19,19,16,16,22,22,22,16,16,7,7,7,7,7]
+      },
+
+      // Données pour le graphique donut (répartition des consommations)
+      repartition: {
+        labels: ['Chauffage 1', 'Chauffage 2', 'ECS'],
+        valuesKwh: [2150, 1900, 950],
+        valuesPercent: [43, 38, 19],
+        colors: ['#316c79', '#79316c', '#6c7931']
       }
-      const chargeChaudiere1 = [0,0,25,0,25,75,100,100,100,75,50,25,75,100,100,100,75,25,0,0,0,0,0,0];
-      const chargeChaudiere2 = [0,0,0,0,0,0,50,100,50,0,0,0,0,100,50,0,0,0,0,0,0,0,0,0];
-      // Variables pour suivre la visibilité des séries
-      let showC1 = true;
-      let showC2 = false;
-      
-      // Pour le Donut
-      const repartition = [43, 38, 19];
-      
-      /********** Histogram Chart **********/
-      const ctxHisto = document.getElementById('histogramme').getContext('2d');
-      new Chart(ctxHisto, {
-        type: 'bar',
-        data: {
-          labels: mois,
-          datasets: [
-            {
-              label: 'Année 2024',
-              data: consommationGazAnneePrecedente,
-              backgroundColor: 'rgba(255,165,0,0.5)'
+    };
+
+    // ========== GESTION DES ALARMES ==========
+    function initializeAlarms() {
+      Object.keys(AlarmStates).forEach((key, index) => {
+        const alarmId = `alarm-${index + 1}`;
+        const alarmElement = document.getElementById(alarmId);
+        const isActive = AlarmStates[key];
+
+        if (alarmElement) {
+          alarmElement.className = `alarm-light ${isActive ? 'active' : 'inactive'}`;
+        }
+      });
+    }
+
+    function updateAlarmState(alarmNumber, isActive) {
+      const alarmElement = document.getElementById(`alarm-${alarmNumber}`);
+      if (alarmElement) {
+        alarmElement.className = `alarm-light ${isActive ? 'active' : 'inactive'}`;
+        AlarmStates[`alarm${alarmNumber}`] = isActive;
+      }
+    }
+
+    // ========== CLASSE PRINCIPALE DU DASHBOARD ==========
+    class DashboardChaufferie {
+      constructor() {
+        this.charts = {};
+        this.gaugeState = {
+          currentValue: 150,
+          maxValue: 190
+        };
+        this.chargeVisibility = {
+          chaudiere1: true,
+          chaudiere2: false
+        };
+        this.donutDisplayMode = 'percent';
+        this.showChargeChart = true;
+      }
+
+      init() {
+        initializeAlarms();
+        this.createHistogramChart();
+        this.createGaugeChart();
+        this.createCourbeChargeChart();
+        this.createConsommationChart();
+        this.createDonutChart();
+        this.setupEventListeners();
+      }
+
+      createHistogramChart() {
+        const ctx = document.getElementById('histogramme').getContext('2d');
+        this.charts.histogram = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: DashboardData.histogram.mois,
+            datasets: [
+              {
+                label: 'Année 2024',
+                data: DashboardData.histogram.consommation2024,
+                backgroundColor: 'rgba(255,165,0,0.5)',
+                borderColor: 'rgba(255,165,0,1)',
+                borderWidth: 1
+              },
+              {
+                label: 'Année 2025',
+                data: DashboardData.histogram.consommation2025,
+                backgroundColor: '#316c79',
+                borderColor: '#1a434e',
+                borderWidth: 1
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                min: 50,
+                max: 1000,
+                title: {
+                  display: true,
+                  text: 'Consommation (kWh)'
+                }
+              },
+              x: {
+                title: {
+                  display: true,
+                  text: 'Mois'
+                }
+              }
             },
-            {
-              label: 'Année 2025',
-              data: consommationGaz,
-              backgroundColor: '#316c79'
+            plugins: {
+              legend: {
+                display: true,
+                position: 'top'
+              }
             }
-          ]
-        },
-        options: {
-          scales: {
-            y: {
-              min:50,
-              max: 1000,
-              title: { display: true, text: 'kWh' }
+          }
+        });
+      }
+
+      createGaugeChart() {
+        const ctx = document.getElementById('gauge').getContext('2d');
+        const gaugeWrapper = document.querySelector('.gauge-wrapper');
+        const gradient = ctx.createLinearGradient(0, 0, gaugeWrapper.clientWidth, 0);
+        gradient.addColorStop(0, 'green');
+        gradient.addColorStop(0.5, 'yellow');
+        gradient.addColorStop(1, 'red');
+
+        this.charts.gauge = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Valeur Actuelle', 'Restant'],
+            datasets: [{
+              data: [this.gaugeState.currentValue, this.gaugeState.maxValue - this.gaugeState.currentValue],
+              backgroundColor: [gradient, 'lightgray'],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            cutout: '80%',
+            rotation: -90,
+            circumference: 180,
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: { enabled: false }
+            }
+          }
+        });
+
+        this.updateGaugeNeedle();
+      }
+
+      createCourbeChargeChart() {
+        const ctx = document.getElementById('courbeCharge').getContext('2d');
+        this.charts.courbeCharge = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: DashboardData.courbeCharge.heures,
+            datasets: []
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true,
+                max: 200,
+                ticks: {
+                  stepSize: 25,
+                  callback: function(value) { return value + '%'; }
+                },
+                title: { display: true, text: 'Charge (%)' }
+              },
+              x: {
+                title: { display: true, text: 'Heure de la journée' }
+              }
+            },
+            plugins: {
+              legend: {
+                display: true,
+                onClick: (e, legendItem) => this.handleChargeChartLegendClick(legendItem),
+                labels: {
+                  generateLabels: (chart) => this.generateChargeChartLegendLabels()
+                }
+              }
+            }
+          }
+        });
+
+        this.updateCourbeCharge();
+      }
+
+      createConsommationChart() {
+        const ctx = document.getElementById('consommationChart').getContext('2d');
+        this.charts.consommation = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: DashboardData.consommation.heures,
+            datasets: [
+              {
+                label: 'Consommation Circuit 1',
+                data: DashboardData.consommation.circuit1,
+                borderColor: '#316c79',
+                backgroundColor: 'rgba(49,108,121,0.2)',
+                yAxisID: 'y1',
+                fill: false,
+                tension: 0.1
+              },
+              {
+                label: 'Consommation Circuit 2',
+                data: DashboardData.consommation.circuit2,
+                borderColor: '#79316c',
+                backgroundColor: 'rgba(121,49,108,0.2)',
+                yAxisID: 'y1',
+                fill: false,
+                tension: 0.1
+              },
+              {
+                label: 'Température Extérieur',
+                data: DashboardData.temperature.exterieur,
+                borderColor: '#1a434e',
+                backgroundColor: 'rgba(26,67,78,0.2)',
+                yAxisID: 'y2',
+                fill: false,
+                tension: 0.1
+              },
+              {
+                label: 'Température Circuit 1',
+                data: DashboardData.temperature.circuit1,
+                borderColor: '#ff9800',
+                backgroundColor: 'rgba(255,152,0,0.2)',
+                yAxisID: 'y2',
+                fill: false,
+                tension: 0.1
+              },
+              {
+                label: 'Température Circuit 2',
+                data: DashboardData.temperature.circuit2,
+                borderColor: '#4caf50',
+                backgroundColor: 'rgba(76,175,80,0.2)',
+                yAxisID: 'y2',
+                fill: false,
+                tension: 0.1
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y1: {
+                type: 'linear',
+                display: true,
+                position: 'left',
+                min: 50,
+                max: 250,
+                title: {
+                  display: true,
+                  text: 'Consommation par heure'
+                }
+              },
+              y2: {
+                type: 'linear',
+                display: true,
+                position: 'right',
+                min: -5,
+                max: 25,
+                title: {
+                  display: true,
+                  text: 'Température'
+                },
+                grid: {
+                  drawOnChartArea: false
+                }
+              },
+              x: {
+                title: {
+                  display: true,
+                  text: 'Heure de la journée'
+                }
+              }
+            },
+            plugins: {
+              legend: {
+                display: true,
+                position: 'top'
+              }
+            }
+          }
+        });
+      }
+
+      createDonutChart() {
+        const ctx = document.getElementById('donut').getContext('2d');
+        this.charts.donut = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: DashboardData.repartition.labels,
+            datasets: [{
+              data: DashboardData.repartition.valuesPercent,
+              backgroundColor: DashboardData.repartition.colors,
+              borderWidth: 2,
+              borderColor: '#fff'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '60%',
+            plugins: {
+              datalabels: {
+                color: 'white',
+                font: { weight: 'bold', size: 12 },
+                formatter: (value) => this.formatDonutLabel(value)
+              },
+              legend: {
+                display: true,
+                position: 'bottom'
+              },
+              tooltip: {
+                callbacks: {
+                  label: (context) => this.formatDonutTooltip(context)
+                }
+              }
             }
           },
-          responsive: true,
-          maintainAspectRatio: false
-        }
-      });
-      
-      /********** Gauge Chart **********/
-      const ctxGauge = document.getElementById('gauge').getContext('2d');
-      const gaugeWrapper = document.querySelector('.gauge-wrapper');
-      const gradient = ctxGauge.createLinearGradient(0, 0, gaugeWrapper.clientWidth, 0);
-      gradient.addColorStop(0, 'green');
-      gradient.addColorStop(0.5, 'yellow');
-      gradient.addColorStop(1, 'red');
-      
-      const gaugeChart = new Chart(ctxGauge, {
-        type: 'doughnut',
-        data: {
-          labels: ['Atteint', 'Restant'],
-          datasets: [{
-            data: [gaugeValue, maxValue - gaugeValue],
-            backgroundColor: [gradient, 'lightgray'],
-            borderWidth: 0
-          }]
-        },
-        options: {
-          cutout: '80%',
-          rotation: -90,
-          circumference: 180,
-          plugins: {
-            legend: { display: false },
-            tooltip: { enabled: false }
-          },
-          responsive: true,
-          maintainAspectRatio: false
-        }
-      });
-      
-      function positionNeedle() {
+          plugins: [ChartDataLabels]
+        });
+
+        this.updateDonutCenterText();
+      }
+
+      setupEventListeners() {
+        document.getElementById('circuit-select').addEventListener('change', (e) => {
+          this.handleCircuitChange(e.target.value);
+        });
+
+        document.getElementById('donut-switch').addEventListener('change', (e) => {
+          this.handleDonutModeChange(e.target.checked);
+        });
+
+        document.getElementById('toggle-chart-button').addEventListener('click', () => {
+          this.toggleChartView();
+        });
+      }
+
+      handleCircuitChange(selectedCircuit) {
+        const circuitData = DashboardData.circuits[selectedCircuit];
+        this.gaugeState.currentValue = circuitData.measured;
+        this.gaugeState.maxValue = circuitData.max;
+        document.getElementById('gauge-value').textContent = circuitData.measured;
+        document.getElementById('gauge-objectif').textContent = circuitData.objectif;
+        this.charts.gauge.data.datasets[0].data = [
+          this.gaugeState.currentValue,
+          this.gaugeState.maxValue - this.gaugeState.currentValue
+        ];
+        this.charts.gauge.update();
+        this.updateGaugeNeedle();
+      }
+
+      updateGaugeNeedle() {
         const needle = document.getElementById('gauge-needle');
-        const angle = (gaugeValue / maxValue) * 180 - 90;
+        const angle = (this.gaugeState.currentValue / this.gaugeState.maxValue) * 180 - 90;
         needle.style.transform = `translate(-50%, 0) rotate(${angle}deg)`;
       }
-      positionNeedle();
-      
-      // Attachement de l'événement sur le sélecteur de circuit
-      document.getElementById('circuit-select').addEventListener('change', function(e) {
-        const selected = e.target.value;
-        gaugeValue = circuits[selected].measured;
-        maxValue = circuits[selected].max;
-        document.getElementById('gauge-value').textContent = gaugeValue;
-        document.getElementById('gauge-objectif').textContent = circuits[selected].objectif;
-        gaugeChart.data.datasets[0].data = [gaugeValue, maxValue - gaugeValue];
-        gaugeChart.update();
-        positionNeedle();
-      });
-      
-      /********** Courbe de Charge Chart **********/
-      const ctxCharge = document.getElementById('courbeCharge').getContext('2d');
-      let chargeChart = new Chart(ctxCharge, {
-        type: 'line',
-        data: {
-          labels: heures,
-          datasets: [] // Les datasets seront créés par updateChargeChart()
-        },
-        options: {
-          plugins: {
-            legend: {
-              display: true,
-              onClick: function(e, legendItem, legend) {
-                // Bascule la visibilité de chaque série
-                if (legendItem.text === 'Chaudière 1') {
-                  showC1 = !showC1;
-                } else if (legendItem.text === 'Chaudière 2') {
-                  showC2 = !showC2;
-                }
-                updateChargeChart();
-                chargeChart.update();
-              },
-              labels: {
-                generateLabels: function(chart) {
-                  return [
-                    {
-                      text: 'Chaudière 1',
-                      fillStyle: showC1 ? '#316c79' : 'rgba(49,108,121,0.5)',
-                      hidden: false,
-                      datasetIndex: 0
-                    },
-                    {
-                      text: 'Chaudière 2',
-                      fillStyle: showC2 ? '#79316c' : 'rgba(121,49,108,0.5)',
-                      hidden: false,
-                      datasetIndex: 1
-                    }
-                  ];
-                }
-              }
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              max: 200,
-              ticks: {
-                stepSize: 25,
-                callback: function(value) { return value + '%'; }
-              },
-              title: { display: true, text: 'Charge (%)' }
-            },
-            x: { 
-              title: { display: true, text: 'Heure' }
-            }
-          },
-          responsive: true,
-          maintainAspectRatio: false
+
+      handleChargeChartLegendClick(legendItem) {
+        if (legendItem.text === 'Chaudière 1') {
+          this.chargeVisibility.chaudiere1 = !this.chargeVisibility.chaudiere1;
+        } else if (legendItem.text === 'Chaudière 2') {
+          this.chargeVisibility.chaudiere2 = !this.chargeVisibility.chaudiere2;
         }
-      });
-      
-      // Fonction de mise à jour de la Courbe de Charge
-      function updateChargeChart() {
-        let newDatasets = [];
-        if (showC1 && showC2) {
-          // Si les deux sont activées, additionner heure par heure
-          const combined = chargeChaudiere1.map((v, i) => v + chargeChaudiere2[i]);
-          newDatasets.push({
-            label: 'Charge Totale (C1 + C2)',
-            data: combined,
-            borderColor: 'rgb(255,165,0)',
-            backgroundColor: 'rgba(255,165,0,0.5)',
-            fill: true,
-            tension: 0.1
-          });
-        } else if (showC1) {
-          newDatasets.push({
-            label: 'Chaudière 1',
-            data: chargeChaudiere1,
-            borderColor: '#316c79',
-            backgroundColor: 'rgba(49,108,121,0.3)',
-            fill: true,
-            tension: 0.1
-          });
-        } else if (showC2) {
-          newDatasets.push({
-            label: 'Chaudière 2',
-            data: chargeChaudiere2,
-            borderColor: '#79316c',
-            backgroundColor: 'rgba(121,49,108,0.3)',
-            fill: true,
-            tension: 0.1
-          });
-        }
-        chargeChart.data.datasets = newDatasets;
-        chargeChart.update();
+        this.updateCourbeCharge();
+        this.charts.courbeCharge.update();
       }
-      updateChargeChart();
-      
-      /********** Donut Chart **********/
-      const ctxDonut = document.getElementById('donut').getContext('2d');
-      new Chart(ctxDonut, {
-        type: 'doughnut',
-        data: {
-          labels: ['Chauffage 1', 'Chauffage 2', 'ECS'],
-          datasets: [{
-            data: repartition,
-            backgroundColor: ['#316c79', '#79316c', '#6c7931']
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            datalabels: {
-              color: 'white',
-              font: { weight: 'bold' },
-              formatter: function(value) {
-                return value + '%';
-              }
-            },
-            legend: { display: true }
+
+      generateChargeChartLegendLabels() {
+        const { chaudiere1: showC1, chaudiere2: showC2 } = this.chargeVisibility;
+
+        return [
+          {
+            text: 'Chaudière 1',
+            fillStyle: showC1 ? '#316c79' : 'rgba(49,108,121,0.3)',
+            strokeStyle: showC1 ? '#316c79' : 'rgba(49,108,121,0.3)',
+            hidden: false,
+            datasetIndex: 0
+          },
+          {
+            text: 'Chaudière 2',
+            fillStyle: showC2 ? '#79316c' : 'rgba(121,49,108,0.3)',
+            strokeStyle: showC2 ? '#79316c' : 'rgba(121,49,108,0.3)',
+            hidden: false,
+            datasetIndex: 1
           }
-        },
-        plugins: [ChartDataLabels]
-      });
+        ];
+      }
+
+      handleDonutModeChange(isKwhMode) {
+        this.donutDisplayMode = isKwhMode ? 'kwh' : 'percent';
+        const newData = isKwhMode
+          ? DashboardData.repartition.valuesKwh
+          : DashboardData.repartition.valuesPercent;
+        this.charts.donut.data.datasets[0].data = newData;
+        this.charts.donut.update();
+        this.updateDonutCenterText();
+      }
+
+      formatDonutLabel(value) {
+        return this.donutDisplayMode === 'kwh'
+          ? value + ' kWh'
+          : value + '%';
+      }
+
+      formatDonutTooltip(context) {
+        const label = context.label || '';
+        const value = context.parsed;
+
+        if (this.donutDisplayMode === 'kwh') {
+          const total = DashboardData.repartition.valuesKwh.reduce((a, b) => a + b, 0);
+          const percent = Math.round((value / total) * 100);
+          return `${label}: ${value} kWh (${percent}%)`;
+        } else {
+          return `${label}: ${value}%`;
+        }
+      }
+
+      updateDonutCenterText() {
+        const totalValueElement = document.getElementById('donut-total-value');
+        const totalLabelElement = document.getElementById('donut-total-label');
+
+        if (this.donutDisplayMode === 'kwh') {
+          const total = DashboardData.repartition.valuesKwh.reduce((a, b) => a + b, 0);
+          totalValueElement.textContent = total.toLocaleString();
+          totalLabelElement.textContent = 'kWh Total';
+        } else {
+          totalValueElement.textContent = '100';
+          totalLabelElement.textContent = '% Total';
+        }
+      }
+
+      updateCourbeCharge() {
+        const datasets = [];
+        const { chaudiere1: showC1, chaudiere2: showC2 } = this.chargeVisibility;
+
+        if (showC1 && showC2) {
+          const chargeTotal = DashboardData.courbeCharge.chaudiere1.map(
+            (v, i) => v + DashboardData.courbeCharge.chaudiere2[i]
+          );
+          datasets.push({
+            label: 'Charge Totale (C1 + C2)',
+            data: chargeTotal,
+            borderColor: 'rgb(255,165,0)',
+            backgroundColor: 'rgba(255,165,0,0.2)',
+            fill: true,
+            tension: 0.1
+          });
+        } else {
+          if (showC1) {
+            datasets.push({
+              label: 'Chaudière 1',
+              data: DashboardData.courbeCharge.chaudiere1,
+              borderColor: '#316c79',
+              backgroundColor: 'rgba(49,108,121,0.2)',
+              fill: true,
+              tension: 0.1
+            });
+          }
+          if (showC2) {
+            datasets.push({
+              label: 'Chaudière 2',
+              data: DashboardData.courbeCharge.chaudiere2,
+              borderColor: '#79316c',
+              backgroundColor: 'rgba(121,49,108,0.2)',
+              fill: true,
+              tension: 0.1
+            });
+          }
+        }
+
+        this.charts.courbeCharge.data.datasets = datasets;
+        this.charts.courbeCharge.update();
+      }
+
+      toggleChartView() {
+        const flipper = document.getElementById('chart-flipper');
+        flipper.classList.toggle('flipped');
+        this.showChargeChart = !this.showChargeChart;
+        const button = document.getElementById('toggle-chart-button');
+        button.textContent = this.showChargeChart ? 'Basculer vers Consommation/Température' : 'Basculer vers Courbe de Charge';
+      }
+
+      updateData(newData) {
+        console.log('Mise à jour des données:', newData);
+      }
+
+      destroy() {
+        Object.values(this.charts).forEach(chart => {
+          if (chart && typeof chart.destroy === 'function') {
+            chart.destroy();
+          }
+        });
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const dashboard = new DashboardChaufferie();
+      dashboard.init();
+      window.dashboard = dashboard;
     });
   </script>
 </body>
